@@ -1,0 +1,23 @@
+# Default
+.Rproj.user
+.Rhistory
+.RData
+.Ruserdata
+
+#
+.DS_Store
+
+# Output data
+*.log
+*.png
+*.html
+*.jpg
+*.tiff
+*.csv
+*.rds
+*.zip
+*.txt
+
+# Example code in progress
+*-Ex.R
+*-Ex.Rmd
