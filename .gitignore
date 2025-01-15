@@ -9,8 +9,8 @@
 
 # Output data
 *.log
-*.png
 *.html
+*.png
 *.jpg
 *.tiff
 *.csv
