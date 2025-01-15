@@ -16,13 +16,13 @@ two_predictor_data <-
 set.seed(1234)
 
 # 1. Splitting the data----
-# 3/4 of the data into the training set but split evenly winthin race
+# 3/4 of the data into the training set but split evenly within is_lipids
 data_split <- initial_split(two_predictor_data, prop = .75, strata = is_lipids)
 # write_rds(data_split, "data_split.rds")
 data_split <- 
   read_rds(paste0(here::here(), 
                   "/data_split.rds"))
-# Create training and testing datasets:
+# Create training and testing data sets:
 train_data <- training(data_split)
 test_data  <- testing(data_split)
 
@@ -35,9 +35,7 @@ recipe_basic <-
   update_role(hmdb, new_role = "ID")
 
 recipe_smote <-
-  # 1.model formula
   recipe(is_lipids ~ ., data = train_data)  %>%
-  # 2.keep these variables but not use them as either outcomes or predictors
   update_role(hmdb, new_role = "ID") %>%
   # 3. Set differential steps
   step_smote(is_lipids)
@@ -189,8 +187,8 @@ model_set <- workflow_set(preproc = recipe_list, models = model_list, cross = T)
 set.seed(1234)
 mldata_folds <- vfold_cv(train_data, strata = is_lipids)
 
-# 6. Run workflows on the training dataset of 1799 using default grid for tuning
-# Set the metrics we want the models to be evaluated
+# 6. Run workflows on the training data set of 1799 using default grid for tuning
+# Set the metrics we want the models to be evaluated on
 class_metric <- metric_set(accuracy, roc_auc, recall, precision, #pr_auc,
                            sensitivity, specificity)
 
@@ -205,13 +203,13 @@ all_workflows <-
 
 # write_rds(all_workflows, "all_workflows.rds")
 
-# 7. Explore workflows----
+# 6. Explore workflows----
 all_workflows <- 
   read_rds(paste0(here::here(), 
                   "/all_workflows.rds"))
 # Here we can make a plot like figure S1 - code in next R script
 
-# 8. Modeling on training and evaluating on testing with fold----
+# 7. Modeling on training and evaluating on testing with fold----
 # First we pick the best spec - here to get best accuracy
 set.seed(1234)
 final_rf <- all_workflows %>%
@@ -283,7 +281,7 @@ final_nb <- all_workflows %>%
                       extract_workflow_set_result("basic_Naive_Bayes") %>%
                       select_best(metric = "accuracy"))
 
-# Model spec for best accuracy are :----
+# Model spec for best accuracy are :
 final_rf$fit$actions$model$spec
 final_knn$fit$actions$model$spec
 final_dt$fit$actions$model$spec
@@ -405,8 +403,7 @@ boosted_tree_results <- read_rds(paste0(here::here(), "/boosted_tree_results.rds
 nb_results <- read_rds(paste0(here::here(), "/nb_results.rds"))
 
 
-
-# 5. Fit on the whole training / predict on testing data----
+# 8. Fit on the whole training / predict on testing data----
 class_metric <- metric_set(accuracy, roc_auc, #recall, precision, #pr_auc, 
                            sensitivity, specificity)
 set.seed(1234)
