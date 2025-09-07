@@ -26,6 +26,16 @@ validation3990_data <-
       "/flores_3990_metabolomics_tissue_2023-08-17/flores_3990_metabolomics_tissue_iron_log2_merged.txt")) %>% 
   janitor::clean_names()
 
+validation_ovca <- 
+  read_delim(
+    paste0(
+      here::here(), 
+      "/ovca_metabolomics.tsv")) %>% 
+  janitor::clean_names() %>% 
+  rename(row_retention_time = rt, row_m_z = m_z, 
+         hmdb = hmdb_id) %>% 
+  mutate(hmdb1 = str_extract(hmdb, "(\\d+)")) %>% 
+  mutate(hmdb = paste0("HMDB00", hmdb1))
 
 ################################################################ II. Data exploration----
 omics1799_data %>% 
@@ -61,14 +71,18 @@ omics1799_data %>%
 
 
 ################################################################ III. Clean data----
+# Exclude RT <1/>14 min
+# cleaning retention time to eliminate false detection during set up, washing and equilibrating the HPLC
 clean_metabolites <- omics1799_data %>% 
-  # cleaning retention time to eliminate false detection during set up, washing and equilibrating the HPLC
   filter(row_retention_time > 1 & row_retention_time < 14)
 
 validation3990_data <- validation3990_data %>% 
   filter(row_retention_time > 1 & row_retention_time < 14)
 
-# Plot resulting data
+validation_ovca <- validation_ovca %>% 
+  filter(row_retention_time > 1 & row_retention_time < 14)
+
+# Quick look at the resulting data
 clean_metabolites %>% 
   mutate(row_retention_time = round(row_retention_time, 1)) %>% 
   ggplot(aes(x= row_retention_time))+
@@ -139,20 +153,41 @@ clean_metabolites2 <- validation3990_data %>%
   distinct(id, .keep_all = TRUE)
 
 # Bind
-validation3990_data <- bind_rows(clean_metabolites1, clean_metabolites2) %>% 
+validation3990_data <- bind_rows(clean_metabolites1, clean_metabolites2) %>%
   distinct(id, .keep_all = TRUE)
+
+# Do the same for the validation koo data - NOT RUN - all metabolites are detected in the positive polarity
+# validation_ovca <- validation_ovca %>% 
+#   # filter(non_heavy_identified_flag == 1) %>% # Not needed for this type of data
+#   # remove same metabolite if present as neg and pos
+#   separate(metabolite_id, into = c("charge", "id"), remove = FALSE) %>%
+#   arrange(id, charge) %>%
+#   distinct(id, .keep_all = TRUE)
+
+# clean_metabolites2 <- validation3990_data %>%
+#   filter(non_heavy_identified_flag == 0) %>% 
+#   # remove same metabolite if present as neg and pos
+#   separate(row_id, into = c("charge", "id"), remove = FALSE) %>%
+#   arrange(id, charge) %>%
+#   distinct(id, .keep_all = TRUE)
+
+# Bind
+# validation_ovca <- bind_rows(clean_metabolites1, clean_metabolites2) %>% 
+#   distinct(id, .keep_all = TRUE)
 
 # Clean
 rm(clean_metabolites1, clean_metabolites2)
 
-# Add taxonomy to our data and create the dichotomous lipids variable Yes/No aka "Lipid/Not Lipid" in paper
+# Add annotation (taxonomy) to our data for creating the dichotomous lipids variable Yes/No aka "Lipid/Not Lipid" in paper
 full_data <- clean_metabolites %>%
-  # Join with known metabolites
   mutate(hmdb = str_remove(hmdb, "^\\|")) %>% 
+  # data "hdmi" ids is a string with multiple hdmi ids separated with a "|" character
+  # need to separate them
   separate_wider_delim(cols = hmdb, delim = "|",
                        names = c("hmdb"), 
                        too_few = "align_start", too_many = "drop", 
                        cols_remove = TRUE) %>% 
+  # Annotate with known metabolites HMDB/KEGG/PubChem
   left_join(., metabolites_classification,
             by = c("hmdb" = "accession"))
 
@@ -166,6 +201,19 @@ validation3990_data <- validation3990_data %>%
   left_join(., metabolites_classification,
             by = c("hmdb" = "accession"))
 
+# Do the same for validation dataset
+validation_ovca <- validation_ovca %>%
+  # data "hdmi" ids are unique so no need to seprate
+  # mutate(hmdb = str_remove(hmdb, "^\\|")) %>% 
+  # separate_wider_delim(cols = hmdb, delim = "|",
+  #                      names = c("hmdb"), 
+  #                      too_few = "align_start", too_many = "drop", 
+  #                      cols_remove = TRUE) %>% 
+  # Annotate with known metabolites HMDB/KEGG/PubChem
+  inner_join(., metabolites_classification,
+            by = c("hmdb" = "accession"))
+
+# Create the dichotomous lipids variable Yes/No aka "Lipid/Not Lipid" in paper
 full_data <- full_data %>%
   mutate(is_lipids = case_when(
     row_id == "neg_00049"                                   ~ "No",
@@ -178,6 +226,14 @@ validation3990_data <- validation3990_data %>%
   filter(non_heavy_identified_flag == 1) %>% # Can already do this step here
   mutate(is_lipids = case_when(
     str_detect(taxonomy_super_class, "Lipids")              ~ "Yes",
+    TRUE                                                    ~ "No"
+  )) %>%
+  mutate_if(is.character, factor)
+
+validation_ovca <- validation_ovca %>%
+  filter(!is.na(taxonomy_super_class)) %>% # Can already do this step here
+  mutate(is_lipids = case_when(
+    str_detect(taxonomy_super_class, "Lipids")                       ~ "Yes",
     TRUE                                                    ~ "No"
   )) %>%
   mutate_if(is.character, factor)
@@ -195,7 +251,13 @@ validation3990_data <- validation3990_data %>%
       row_retention_time <= 13            ~  4.615 * row_retention_time + 20
   ))
 # write_rds(validation3990_data, "validation3990_data_with_nonidentified_metabolites.rds")
-# write_rds(validation3990_data, "validation3990_data.rds")
+
+validation_ovca <- validation_ovca %>%
+  mutate(buffer_percent = case_when(
+    row_retention_time >= 0 &
+      row_retention_time <= 13            ~  4.615 * row_retention_time + 20
+  ))
+# write_rds(validation_ovca, "clean_validation_ovca.rds")
 
 ################################################################ IV. Explore clean data----
 full_data %>% 
@@ -229,16 +291,6 @@ a <- full_data %>%
   mutate(ypos = ypos - 0.5*ypos) %>% 
   ungroup()
 
-a %>% 
-  ggplot(aes(x= "", fill= non_heavy_identified_flag))+
-  geom_bar(width=1, color= "white") +
-  coord_polar("y", start=0)+
-  theme_void()+
-  
-  geom_text(data = a %>%
-              distinct(non_heavy_identified_flag, .keep_all = TRUE),
-            mapping = aes(x=1.6, y= ypos, label = non_heavy_identified_flag
-            ))
 
 # Create Final minimal data including 2 predictors (m/z and gradient concentration) and the outcome (is_lipids)
 two_predictor_data <- full_data %>%
