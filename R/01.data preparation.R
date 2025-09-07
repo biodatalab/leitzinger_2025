@@ -12,21 +12,21 @@ metabolites_classification <-
   janitor::clean_names()
 
 # metabolites expression data
-omics1799_data <- 
+omics1799_data <- # discovery dataset
   read_delim(
     paste0(
       here::here(), 
       "/flores_1799_tap73_metabolomics_reanalyze_2023-08-17/flores_1799_tap73_metabolomics_reanalysis_2023-08-17_iron_log2_merged.txt")) %>% 
   janitor::clean_names()
 #
-validation3990_data <- 
+validation3990_data <- # validation dataset
   read_delim(
     paste0(
       here::here(), 
       "/flores_3990_metabolomics_tissue_2023-08-17/flores_3990_metabolomics_tissue_iron_log2_merged.txt")) %>% 
   janitor::clean_names()
 
-validation_ovca <- 
+validation_ovca <- # independent dataset
   read_delim(
     paste0(
       here::here(), 

@@ -3,7 +3,7 @@ library(tidyverse)
 library(tidymodels)
 library(themis) # for step_smote
 library(discrim) # for naive_Bayes
-# library(klaR) 
+library(klaR)
 
 
 ################################################################ Load data----
@@ -18,6 +18,8 @@ set.seed(1234)
 # 1. Splitting the data----
 # 3/4 of the data into the training set but split evenly within is_lipids
 data_split <- initial_split(two_predictor_data, prop = .75, strata = is_lipids)
+
+# save data
 # write_rds(data_split, "data_split.rds")
 data_split <- 
   read_rds(paste0(here::here(), 
@@ -183,11 +185,11 @@ model_list <-
 
 model_set <- workflow_set(preproc = recipe_list, models = model_list, cross = T)
 
-# 5. Create cv fold----
+# 5. Create 10 fold cross validation data----
 set.seed(1234)
 mldata_folds <- vfold_cv(train_data, strata = is_lipids)
 
-# 6. Run workflows on the training data set of 1799 using default grid for tuning
+# 6. Run workflows on the training data set of 1799 using default grid for tuning----
 # Set the metrics we want the models to be evaluated on
 class_metric <- metric_set(accuracy, roc_auc, recall, precision, #pr_auc,
                            sensitivity, specificity)
@@ -200,17 +202,21 @@ all_workflows <-
                              verbose = TRUE,
                              control = control_resamples(save_pred = TRUE))
 
-
+# Save workflow for later use and for figures
 # write_rds(all_workflows, "all_workflows.rds")
 
 # 6. Explore workflows----
 all_workflows <- 
   read_rds(paste0(here::here(), 
                   "/all_workflows.rds"))
-# Here we can make a plot like figure S1 - code in next R script
+# Here we can make a plot like figure S2 - code in next R script
 
 # 7. Modeling on training and evaluating on testing with fold----
 # First we pick the best spec - here to get best accuracy
+# We saw that adding any pre-processors alone or in combination gives similar performance (accuracy, ROC AUC, PR AUC (lipid/non-lipid))
+# The decision to select the specification based on accuracy is grounded on the model/recipe ranking.
+# We picked accuracy as it reflect the most all metrics results and to maintain simplicity as well as applicability to other metabolite classes.
+# Given these consistent results, we have chosen to select the simplest approach, i.e., the preprocessor which modifies the least the data.
 set.seed(1234)
 final_rf <- all_workflows %>%
   extract_workflow("basic_Random_Forest") %>%
@@ -281,7 +287,7 @@ final_nb <- all_workflows %>%
                       extract_workflow_set_result("basic_Naive_Bayes") %>%
                       select_best(metric = "accuracy"))
 
-# Model spec for best accuracy are :
+# Tuned model spec for best accuracy are :
 final_rf$fit$actions$model$spec
 final_knn$fit$actions$model$spec
 final_dt$fit$actions$model$spec
@@ -293,7 +299,7 @@ final_boosted_tree$fit$actions$model$spec
 final_svm$fit$actions$model$spec
 final_nb$fit$actions$model$spec
 
-# Run models/spec on data fold
+# Run models/spec on data fold----
 set.seed(1234)
 rf_results <- final_rf %>%
   fit_resamples(
@@ -374,11 +380,8 @@ nb_results <- final_nb %>%
     ),
     control = control_resamples(save_pred = TRUE, verbose = TRUE)
   )
-# write_rds(list(rf_results, knn_results, elastinet_results, 
-#                lasso_results, ridge_results, svm_results), 
-#           "dat.rds")
 
-# a <- read_rds(paste0(here::here(), "/dat.rds"))
+# Save model results for later use
 # write_rds(rf_results, "rf_results.rds")
 # write_rds(knn_results, "knn_results.rds")
 # write_rds(elastinet_results, "elastinet_results.rds")
@@ -404,7 +407,7 @@ nb_results <- read_rds(paste0(here::here(), "/nb_results.rds"))
 
 
 # 8. Fit on the whole training / predict on testing data----
-class_metric <- metric_set(accuracy, roc_auc, #recall, precision, #pr_auc, 
+class_metric <- metric_set(accuracy, roc_auc, #recall, precision, 
                            sensitivity, specificity)
 set.seed(1234)
 final_rf <- all_workflows %>% 
@@ -499,25 +502,45 @@ final_nb <- all_workflows %>%
 # Now we can explore prediction results on the testing data
 
 
-################################################################ III. Validation data----
-validation3990_data <- 
-  read_rds(paste0(here::here(), 
-                  "/validation3990_data.rds"))
-
-# Apply our models/spec to the validation data----
-final_fitted_RF <- extract_workflow(final_rf)
-final_fitted_DT <- extract_workflow(final_dt)
-final_fitted_n2DT <- extract_workflow(final_trimmed_dt)
-final_fitted_KNN <- extract_workflow(final_knn)
-
-# Get prediction
-set.seed(1234)
-predicted_validation3990_data_RF <- augment(final_fitted_RF, validation3990_data)
-set.seed(1234)
-predicted_validation3990_data_DT <- augment(final_fitted_DT, validation3990_data)
-set.seed(1234)
-predicted_validation3990_data_n2DT <- augment(final_fitted_n2DT, validation3990_data)
-set.seed(1234)
-predicted_validation3990_data_KNN <- augment(final_fitted_KNN, validation3990_data)
-
-
+################################################################ III. Validation data----Run in next script
+# validation3990_data <- 
+#   read_rds(paste0(here::here(), 
+#                   "/validation3990_data.rds"))
+# 
+# # Apply our models/spec to the validation data----
+# final_fitted_RF <- extract_workflow(final_rf)
+# final_fitted_DT <- extract_workflow(final_dt)
+# final_fitted_n2DT <- extract_workflow(final_trimmed_dt)
+# final_fitted_KNN <- extract_workflow(final_knn)
+# 
+# # Get prediction
+# set.seed(1234)
+# predicted_validation3990_data_RF <- augment(final_fitted_RF, validation3990_data)
+# set.seed(1234)
+# predicted_validation3990_data_DT <- augment(final_fitted_DT, validation3990_data)
+# set.seed(1234)
+# predicted_validation3990_data_n2DT <- augment(final_fitted_n2DT, validation3990_data)
+# set.seed(1234)
+# predicted_validation3990_data_KNN <- augment(final_fitted_KNN, validation3990_data)
+# 
+# 
+# validation_ovca <- 
+#   read_rds(paste0(here::here(), 
+#                   "/clean_validation_ovca.rds"))
+# 
+# # Apply our models/spec to the validation data----
+# final_fitted_RF <- extract_workflow(final_rf)
+# final_fitted_DT <- extract_workflow(final_dt)
+# final_fitted_n2DT <- extract_workflow(final_trimmed_dt)
+# final_fitted_KNN <- extract_workflow(final_knn)
+# 
+# # Get prediction
+# set.seed(1234)
+# predicted_validation_ovca_RF <- augment(final_fitted_RF, validation_ovca)
+# set.seed(1234)
+# predicted_validation_ovca_DT <- augment(final_fitted_DT, validation_ovca)
+# set.seed(1234)
+# predicted_validation_ovca_n2DT <- augment(final_fitted_n2DT, validation_ovca)
+# set.seed(1234)
+# predicted_validation_ovca_KNN <- augment(final_fitted_KNN, validation_ovca)
+# 
