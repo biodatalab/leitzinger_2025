@@ -20,6 +20,7 @@ set.seed(1234)
 data_split <- initial_split(two_predictor_data, prop = .75, strata = is_lipids)
 
 # save data
+
 # write_rds(data_split, "data_split.rds")
 data_split <- 
   read_rds(paste0(here::here(), 
@@ -202,6 +203,7 @@ all_workflows <-
                              verbose = TRUE,
                              control = control_resamples(save_pred = TRUE))
 
+
 # Save workflow for later use and for figures
 # write_rds(all_workflows, "all_workflows.rds")
 
@@ -217,6 +219,7 @@ all_workflows <-
 # The decision to select the specification based on accuracy is grounded on the model/recipe ranking.
 # We picked accuracy as it reflect the most all metrics results and to maintain simplicity as well as applicability to other metabolite classes.
 # Given these consistent results, we have chosen to select the simplest approach, i.e., the preprocessor which modifies the least the data.
+
 set.seed(1234)
 final_rf <- all_workflows %>%
   extract_workflow("basic_Random_Forest") %>%
@@ -300,6 +303,7 @@ final_svm$fit$actions$model$spec
 final_nb$fit$actions$model$spec
 
 # Run models/spec on data fold----
+
 set.seed(1234)
 rf_results <- final_rf %>%
   fit_resamples(
@@ -543,4 +547,4 @@ final_nb <- all_workflows %>%
 # predicted_validation_ovca_n2DT <- augment(final_fitted_n2DT, validation_ovca)
 # set.seed(1234)
 # predicted_validation_ovca_KNN <- augment(final_fitted_KNN, validation_ovca)
-# 
+#
