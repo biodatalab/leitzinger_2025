@@ -8,10 +8,6 @@ library(kableExtra)
 theme_set(theme_classic())
 
 ################################################################ Load data----
-validation_ovca <- 
-  read_rds(paste0(here::here(), 
-                  "/clean_validation_ovca.rds"))
-
 validation_ovca <- validation_ovca %>% 
   filter(method == "HILIC-pos")
 
@@ -38,10 +34,6 @@ test_data  <- testing(data_split)
 
 
 # Table training/testing
-metabolites_classification <- 
-  read_delim(paste0(here::here(), "/hmdb_keep_v4_python_blessed.txt.zip")) %>% 
-  janitor::clean_names()
-library(gtsummary)
 train_data %>% 
   mutate(data_subset = "OVCA Training set") %>% 
   bind_rows(test_data %>% 
@@ -241,7 +233,7 @@ all_workflows <-
                              control = control_resamples(save_pred = TRUE))
 
 
-# write_rds(all_workflows, "all_workflows_ovca.rds")
+write_rds(all_workflows, "all_workflows_ovca.rds")
 
 # 6. Explore workflows Figure 2----
 all_workflows <- 
@@ -662,21 +654,17 @@ nb_results <- final_nb %>%
     ),
     control = control_resamples(save_pred = TRUE, verbose = TRUE)
   )
-# write_rds(list(rf_results, knn_results, elastinet_results, 
-#                lasso_results, ridge_results, svm_results), 
-#           "dat_ovca.rds")
 
-# a <- read_rds(paste0(here::here(), "/dat_ovca.rds"))
-# write_rds(rf_results, "rf_results_ovca.rds")
-# write_rds(knn_results, "knn_results_ovca.rds")
-# write_rds(elastinet_results, "elastinet_results_ovca.rds")
-# write_rds(lasso_results, "lasso_results_ovca.rds")
-# write_rds(ridge_results, "ridge_results_ovca.rds")
-# write_rds(svm_results, "svm_results_ovca.rds")
-# write_rds(dt_results, "dt_results_ovca.rds")
-# write_rds(trimmed_dt_results, "trimmed_dt_results_ovca.rds")
-# write_rds(boosted_tree_results, "boosted_tree_results_ovca.rds")
-# write_rds(nb_results, "nb_results_ovca.rds")
+write_rds(rf_results, "rf_results_ovca.rds")
+write_rds(knn_results, "knn_results_ovca.rds")
+write_rds(elastinet_results, "elastinet_results_ovca.rds")
+write_rds(lasso_results, "lasso_results_ovca.rds")
+write_rds(ridge_results, "ridge_results_ovca.rds")
+write_rds(svm_results, "svm_results_ovca.rds")
+write_rds(dt_results, "dt_results_ovca.rds")
+write_rds(trimmed_dt_results, "trimmed_dt_results_ovca.rds")
+write_rds(boosted_tree_results, "boosted_tree_results_ovca.rds")
+write_rds(nb_results, "nb_results_ovca.rds")
 
 # Load model results----
 rf_results <- read_rds(paste0(here::here(), "/rf_results_ovca.rds"))
