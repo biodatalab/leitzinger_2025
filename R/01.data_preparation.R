@@ -1,4 +1,8 @@
 # Import library
+install.packages("tidyverse")
+install.packages("gtsummary")
+install.packages("janitor")
+
 library(tidyverse)
 library(gtsummary)
 theme_set(theme_classic())
@@ -7,37 +11,43 @@ theme_gtsummary_compact()
 
 ################################################################ I. Load data----
 # classification data
+url1 <- "https://zenodo.org/record/17227185/files/hmdb_keep_v4_python_blessed.txt?download=1"
 metabolites_classification <- 
-  read_delim(paste0(here::here(), "/hmdb_keep_v4_python_blessed.txt.zip")) %>% 
+  read.delim(url1, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
-# metabolites expression data
-omics1799_data <- # discovery dataset
-  read_delim(
-    paste0(
-      here::here(), 
-      "/flores_1799_tap73_metabolomics_reanalyze_2023-08-17/flores_1799_tap73_metabolomics_reanalysis_2023-08-17_iron_log2_merged.txt")) %>% 
-  janitor::clean_names()
-#
-validation3990_data <- # validation dataset
-  read_delim(
-    paste0(
-      here::here(), 
-      "/flores_3990_metabolomics_tissue_2023-08-17/flores_3990_metabolomics_tissue_iron_log2_merged.txt")) %>% 
+# Discovery dataset
+url2 <- "https://zenodo.org/record/17227185/files/flores_1799_tap73_metabolomics_reanalysis_2023-08-17_iron_log2_merged.txt?download=1"
+omics1799_data <- 
+  read.delim(url2, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
-validation_ovca <- # independent dataset
-  read_delim(
-    paste0(
-      here::here(), 
-      "/ovca_metabolomics.tsv")) %>% 
+# Validation dataset
+url3 <- "https://zenodo.org/record/17227185/files/flores_3990_metabolomics_tissue_iron_log2_merged.txt?download=1"
+validation3990_data <- 
+  read.delim(url3, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
+  janitor::clean_names()
+
+# Independent datset
+url4 <- "https://zenodo.org/record/17227185/files/ovca_metabolomics.tsv?download=1"
+validation_ovca <- 
+  read.delim(url4, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names() %>% 
   rename(row_retention_time = rt, row_m_z = m_z, 
          hmdb = hmdb_id) %>% 
   mutate(hmdb1 = str_extract(hmdb, "(\\d+)")) %>% 
   mutate(hmdb = paste0("HMDB00", hmdb1))
 
+rm(url1, url2, url3, url4)
+
+
 ################################################################ II. Data exploration----
+# Quick check of the first few rows
+head(metabolites_classification)
+head(omics1799_data)
+head(validation3990_data)
+head(validation_ovca)
+
 omics1799_data %>% 
   mutate(row_retention_time = round(row_retention_time, 1)) %>% 
   ggplot(aes(x= row_retention_time))+
@@ -156,8 +166,8 @@ clean_metabolites2 <- validation3990_data %>%
 validation3990_data <- bind_rows(clean_metabolites1, clean_metabolites2) %>%
   distinct(id, .keep_all = TRUE)
 
-# Do the same for the validation koo data - NOT RUN - all metabolites are detected in the positive polarity
-# validation_ovca <- validation_ovca %>% 
+# Do the same for the validation data - NOT RUN - all metabolites are detected in the positive polarity
+# clean_metabolites1 <- validation_ovca %>% 
 #   # filter(non_heavy_identified_flag == 1) %>% # Not needed for this type of data
 #   # remove same metabolite if present as neg and pos
 #   separate(metabolite_id, into = c("charge", "id"), remove = FALSE) %>%
@@ -203,7 +213,7 @@ validation3990_data <- validation3990_data %>%
 
 # Do the same for validation dataset
 validation_ovca <- validation_ovca %>%
-  # data "hdmi" ids are unique so no need to seprate
+  # data "hdmi" ids are unique so no need to separate
   # mutate(hmdb = str_remove(hmdb, "^\\|")) %>% 
   # separate_wider_delim(cols = hmdb, delim = "|",
   #                      names = c("hmdb"), 
@@ -233,7 +243,7 @@ validation3990_data <- validation3990_data %>%
 validation_ovca <- validation_ovca %>%
   filter(!is.na(taxonomy_super_class)) %>% # Can already do this step here
   mutate(is_lipids = case_when(
-    str_detect(taxonomy_super_class, "Lipids")                       ~ "Yes",
+    str_detect(taxonomy_super_class, "Lipids")              ~ "Yes",
     TRUE                                                    ~ "No"
   )) %>%
   mutate_if(is.character, factor)
@@ -250,14 +260,14 @@ validation3990_data <- validation3990_data %>%
     row_retention_time >= 0 &
       row_retention_time <= 13            ~  4.615 * row_retention_time + 20
   ))
-# write_rds(validation3990_data, "validation3990_data_with_nonidentified_metabolites.rds")
+write_rds(validation3990_data, "validation3990_data_with_nonidentified_metabolites.rds")
 
 validation_ovca <- validation_ovca %>%
   mutate(buffer_percent = case_when(
     row_retention_time >= 0 &
       row_retention_time <= 13            ~  4.615 * row_retention_time + 20
   ))
-# write_rds(validation_ovca, "clean_validation_ovca.rds")
+write_rds(validation_ovca, "clean_validation_ovca.rds")
 
 ################################################################ IV. Explore clean data----
 full_data %>% 

@@ -9,38 +9,6 @@ theme_set(theme_classic())
 theme_gtsummary_compact()
 
 ################################################################ Load data----
-omics1799_data <- 
-  read_delim(
-    paste0(
-      here::here(), 
-      "/flores_1799_tap73_metabolomics_reanalyze_2023-08-17/flores_1799_tap73_metabolomics_reanalysis_2023-08-17_iron_log2_merged.txt")) %>% 
-  janitor::clean_names()
-
-full_data <- 
-  read_rds(paste0(here::here(), 
-                  "/full_data.rds"))
-
-ini_validation3990_data <- 
-  read_delim(
-    paste0(
-      here::here(), 
-      "/flores_3990_metabolomics_tissue_2023-08-17/flores_3990_metabolomics_tissue_iron_log2_merged.txt")) %>% 
-  janitor::clean_names()
-
-validation3990_data <- 
-  read_rds(paste0(here::here(), 
-                  "/validation3990_data.rds"))
-
-ini_validation_ovca <- 
-  readxl::read_xlsx(
-    paste0(
-      here::here(), 
-      "/metabolomics_data1_vyr.xlsx")) %>% 
-  janitor::clean_names()
-
-validation_ovca <- 
-  read_rds(paste0(here::here(), 
-                  "/clean_validation_ovca.rds"))
 
 # Figure S1A----
 omics1799_data <- omics1799_data %>% 
@@ -50,12 +18,6 @@ omics1799_data <- omics1799_data %>%
     TRUE                              ~ "Excluded"
   ))
 ini_validation3990_data <- ini_validation3990_data %>% 
-  mutate(excluded = case_when(
-    row_retention_time > 1 & 
-      row_retention_time < 14         ~ "Included",
-    TRUE                              ~ "Excluded"
-  ))
-ini_validation_ovca <- ini_validation_ovca %>% 
   mutate(excluded = case_when(
     row_retention_time > 1 & 
       row_retention_time < 14         ~ "Included",
@@ -157,9 +119,6 @@ train_data <- training(data_split)
 test_data  <- testing(data_split)
 
 # Data subset description
-metabolites_classification <- 
-  read_delim(paste0(here::here(), "/hmdb_keep_v4_python_blessed.txt.zip")) %>% 
-  janitor::clean_names()
 
 # Table S2----
 tbl1 <- train_data %>% 
@@ -359,7 +318,7 @@ ggpubr::as_ggplot(legend)
 # Figure 1D----
 validation3990_data <- 
   read_rds(paste0(here::here(), 
-                  "/validation3990_data.rds"))
+                  "/validation3990_data_with_nonidentified_metabolites.rds"))
 two_predictor_data <- 
   read_rds(paste0(here::here(), 
                   "/two_predictor_data.rds"))
@@ -1554,7 +1513,7 @@ write_csv(testing_performance, "ranked testing_performance.csv")
 ################################################################ III. Validation data----
 validation3990_data <- 
   read_rds(paste0(here::here(), 
-                  "/validation3990_data.rds"))
+                  "/validation3990_data_with_nonidentified_metabolites.rds"))
 
 # Apply our model to the validation data----
 final_fitted_RF <- extract_workflow(final_rf)
