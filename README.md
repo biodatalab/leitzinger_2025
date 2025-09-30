@@ -9,7 +9,7 @@ predictors for metabolite classification and propose a modeling framework which 
 
 # Data availability
 The data necessary to reproduce the framework presented in our manuscript are downloadable 
-through the Zenodo website [https://doi.org/10.5281/zenodo.17236618]. 
+through the Zenodo website https://doi.org/10.5281/zenodo.17237416. 
 The code to download them is present in the R script 01.data_preparation.R.
 
 # How to run
