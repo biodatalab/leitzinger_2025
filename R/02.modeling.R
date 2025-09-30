@@ -207,6 +207,7 @@ all_workflows <-
                              verbose = TRUE,
                              control = control_resamples(save_pred = TRUE))
 
+
 # Save workflow for later use and for figures
 write_rds(all_workflows, "all_workflows.rds")
 
@@ -222,6 +223,7 @@ all_workflows <-
 # The decision to select the specification based on accuracy is grounded on the model/recipe ranking.
 # We picked accuracy as it reflect the most all metrics results and to maintain simplicity as well as applicability to other metabolite classes.
 # Given these consistent results, we have chosen to select the simplest approach, i.e., the preprocessor which modifies the least the data.
+
 set.seed(1234)
 final_rf <- all_workflows %>%
   extract_workflow("basic_Random_Forest") %>%
@@ -305,6 +307,7 @@ final_svm$fit$actions$model$spec
 final_nb$fit$actions$model$spec
 
 # Run models/spec on data fold----
+
 set.seed(1234)
 rf_results <- final_rf %>%
   fit_resamples(
