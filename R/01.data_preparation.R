@@ -11,25 +11,25 @@ theme_gtsummary_compact()
 
 ################################################################ I. Load data----
 # classification data
-url1 <- "https://zenodo.org/records/17236618/files/hmdb_keep_v4_python_blessed.txt?download=1"
+url1 <- "https://zenodo.org/records/17237416/files/hmdb_keep_v4_python_blessed.txt?download=1"
 metabolites_classification <- 
   read.delim(url1, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
 # Discovery dataset
-url2 <- "https://zenodo.org/records/17236618/files/omics1799_data.txt?download=1"
+url2 <- "https://zenodo.org/records/17237416/files/omics1799_data.txt?download=1"
 omics1799_data <- 
   read.delim(url2, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
 # Validation dataset
-url3 <- "https://zenodo.org/records/17236618/files/validation3990_data.txt?download=1"
+url3 <- "https://zenodo.org/records/17237416/files/validation3990_data.txt?download=1"
 validation3990_data <- 
   read.delim(url3, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
 # Independent dataset
-url4 <- "https://zenodo.org/records/17236618/files/ovca_metabolomics.tsv?download=1"
+url4 <- "https://zenodo.org/records/17237416/files/ovca_metabolomics.tsv?download=1"
 validation_ovca <- 
   read.delim(url4, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names() %>% 
