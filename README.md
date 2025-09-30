@@ -20,9 +20,7 @@ Then the script 02.modeling.R uses the `tidymodels` R package to split the data,
 and apply a combination of 10 models (naïve Bayes, decision tree and trimmed decision tree, support-vector machine, random forest, 
 boosted tree, lasso regression, ridge regression, elastic net, and nearest neighbor) and together with 12 different data preprocessing approaches.
 Features were classified as “lipid” or “non-lipid” based on HMDB taxonomy, and the performance of each resulting model was evaluated 
-for their accuracy, ROC AUC, and PR AUC for both lipid categories ('lipid”/”non-lipid”).
-The scripts 03.figures_and_tables.R and 04.independent_data.R provide the code to re-create the figures and tables, and the apply the framework
-to an independent dataset.
+for their accuracy, ROC AUC, and PR AUC for both lipid categories ('lipid”/”non-lipid”). The script 03.figures_and_tables.R generates the figures and tables, while 04.independent_data.R applies the framework to an independent dataset.
 
 # Conclusion
 Our result demonstrates that metabolites can be classified as “lipid”, “non-lipid” using only m/z and RT from untargeted LC-MS data, 
