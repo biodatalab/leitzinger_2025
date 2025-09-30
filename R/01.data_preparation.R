@@ -11,25 +11,25 @@ theme_gtsummary_compact()
 
 ################################################################ I. Load data----
 # classification data
-url1 <- "https://zenodo.org/record/17227185/files/hmdb_keep_v4_python_blessed.txt?download=1"
+url1 <- "https://zenodo.org/records/17236618/files/hmdb_keep_v4_python_blessed.txt?download=1"
 metabolites_classification <- 
   read.delim(url1, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
 # Discovery dataset
-url2 <- "https://zenodo.org/record/17227185/files/flores_1799_tap73_metabolomics_reanalysis_2023-08-17_iron_log2_merged.txt?download=1"
+url2 <- "https://zenodo.org/records/17236618/files/omics1799_data.txt?download=1"
 omics1799_data <- 
   read.delim(url2, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
 # Validation dataset
-url3 <- "https://zenodo.org/record/17227185/files/flores_3990_metabolomics_tissue_iron_log2_merged.txt?download=1"
+url3 <- "https://zenodo.org/records/17236618/files/validation3990_data.txt?download=1"
 validation3990_data <- 
   read.delim(url3, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names()
 
-# Independent datset
-url4 <- "https://zenodo.org/record/17227185/files/ovca_metabolomics.tsv?download=1"
+# Independent dataset
+url4 <- "https://zenodo.org/records/17236618/files/ovca_metabolomics.tsv?download=1"
 validation_ovca <- 
   read.delim(url4, header = TRUE, sep = "\t", stringsAsFactors = FALSE) %>% 
   janitor::clean_names() %>% 
@@ -109,7 +109,7 @@ clean_metabolites %>%
   xlim(0, 15)
 
 # Minimize overlap in identified metabolites between both polarities
-# Priority is given to metabolite found in the negative ion mode due to the larger in dataset
+# Priority is given to metabolite found in the negative ion mode due to the larger dataset
 clean_metabolites1 <- clean_metabolites %>%
   filter(non_heavy_identified_flag == 1) %>% 
   # remove same metabolite if present as neg and pos
