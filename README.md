@@ -5,7 +5,7 @@ John M. Koomen, Nancy Gillis, Brooke L. Fridley, Elsa R. Flores, Oana A. Zelezni
 
 # Objective
 To explore the potential of using the mass-to-charge ratio (m/z) and retention time (RT) from LC-MS data as standalone 
-predictors for metabolite classification and propose a modeling framework which can be implemented internally on standalone datasets.
+predictors for metabolite classification and propose a modeling framework that can be implemented internally on standalone datasets.
 
 # Data availability
 The data necessary to reproduce the framework presented in our manuscript are downloadable 
@@ -20,7 +20,7 @@ Then the script 02.modeling.R uses the `tidymodels` R package to split the data,
 and apply a combination of 10 models (naïve Bayes, decision tree and trimmed decision tree, support-vector machine, random forest, 
 boosted tree, lasso regression, ridge regression, elastic net, and nearest neighbor) and together with 12 different data preprocessing approaches.
 Features were classified as “lipid” or “non-lipid” based on HMDB taxonomy, and the performance of each resulting model was evaluated 
-for their accuracy, ROC AUC, and PR AUC for both lipid categories ('lipid”/”non-lipid”). The script 03.figures_and_tables.R generates the figures and tables, while 04.independent_data.R applies the framework to an independent dataset.
+for its accuracy, ROC AUC, and PR AUC for both lipid categories ('lipid”/”non-lipid”). The script 03.figures_and_tables.R generates the figures and tables, while 04.independent_data.R applies the framework to an independent dataset.
 
 # Conclusion
 Our result demonstrates that metabolites can be classified as “lipid”, “non-lipid” using only m/z and RT from untargeted LC-MS data, 
